@@ -11,6 +11,7 @@
     "@antv/g2plot": "^2.0.9",
     "ant-design-vue": "^1.7.2",
     "core-js": "^3.6.5",
+    "viser-vue": "^2.4.8",
     "vue": "^2.6.11"
   },
   "devDependencies": {

@@ -1,21 +1,39 @@
 <template>
   <div id="components-table-demo-size">
-    <div id="userLine">
+    <div id="char">
+      <v-chart :forceFit="true" :height="height" :data="charData" :scale="scale">
+        <v-tooltip />
+        <v-axis />
+        <v-line position="name*age" />
+        <v-point position="name*age" shape="circle" />
+      </v-chart>
     </div>
-    <div id="data">
+    <div id="table">
       <a-table
           :columns="columns"
           :data-source="tableData"
           :rowClassName="(record, index) => index % 2 === 1 ? 'odd' : 'even'"
           :loading = "loading"
           :scroll="{ y: 500}"
-          :pagination = "pagination">
+          :pagination = "pagination"
+          @change="handleCurrentChange"
+          :current.sync="currentPage">
       </a-table>
     </div>
-
   </div>
 </template>
 <script>
+
+const scale = [{
+  dataKey: 'name',
+  min: 0,
+},{
+  dataKey: 'age',
+  min: 0,
+  max: 100,
+}];
+
+
 const columns = [
   {
     title: 'Name',
@@ -34,25 +52,16 @@ const columns = [
   },
 ];
 
-const data = [
-  { year: '1991', value: 3 },
-  { year: '1992', value: 4 },
-  { year: '1993', value: 3.5 },
-  { year: '1994', value: 5 },
-  { year: '1995', value: 4.9 },
-  { year: '1996', value: 7 },
-  { year: '1997', value: 7 },
-  { year: '1998', value: 9 },
-  { year: '1999', value: 13 },
-];
-
-import { getTableData } from '@/api/table';
-import { Line } from '@antv/g2plot';
+import { getTableData, getCharData } from '@/api/table';
 
 export default {
   data() {
     return {
+      scale,
+      currentPage:1,
+      height: 400,
       tableData:[],
+      charData:[],
       columns,
       loading:true,
       pagination:{
@@ -69,29 +78,29 @@ export default {
     };
   },
   mounted() {
-    this.getTable()
+    this.getTable(),
+    this.getChar()
   },
   methods:{
+    handleCurrentChange(currentPage){
+      this.currentPage = currentPage.curren;
+      this.getChar();
+    },
     getTable(){
       getTableData().then(res => {
         this.loading = false;
         this.tableData = res;
       })
-      this.initComponent();
     },
-    initComponent(){
-      const line = new Line('userLine', {
-        data,
-        xField: 'year',
-        yField: 'value',
-        smooth: true,
-        meta: {
-          value: {
-            max: 15,
-          },
-        },
-      });
-      line.render();
+    getChar(){
+      let para = {
+        limit: this.pagination.pageSize,
+        page: this.currentPage,
+      }
+      getCharData(para).then(res =>{
+        this.loading = false;
+        this.charData = res;
+      })
     }
   }
 };
