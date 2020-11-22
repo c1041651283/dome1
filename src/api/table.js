@@ -6,13 +6,21 @@ for (let i = 0; i < 30; i++) {
         name: `Edward King ${i}`,
         age: Math.floor(Math.random()*100),
         address: `London, Park Lane no. ${i}`,
+        date:'2020/11/5'
     });
 }
+let date1 = "2020/12/5"
+let date = tableDataList.filter(function (x){
+    if((new Date(date1)).getFullYear().getTime() == (new Date(x.date)).getFullYear().getTime()
+        && ((new Date(date1)).getMonth()+1).getTime() == ((new Date(x.date)).getMonth()+1).getTime()){
+        return true;
+    }
+})
 
 export function getTableData(){
     return new Promise((resolve) => {
         setTimeout(() => {
-            resolve(tableDataList)
+            resolve(date)
         },1000)
     })
 }

@@ -1,115 +1,123 @@
 <template>
-  <div id="components-table-demo-size">
-    <div id="char">
-      <v-chart :forceFit="true" :height="height" :data="charData" :scale="scale">
-        <v-tooltip />
-        <v-axis />
-        <v-line position="name*age" />
-        <v-point position="name*age" shape="circle" />
-      </v-chart>
-    </div>
-    <div id="table">
-      <a-table
-          :columns="columns"
-          :data-source="tableData"
-          :rowClassName="(record, index) => index % 2 === 1 ? 'odd' : 'even'"
-          :loading = "loading"
-          :scroll="{ y: 500}"
-          :pagination = "pagination"
-          @change="handleCurrentChange"
-          :current.sync="currentPage">
+  <div class="page">
+    <div>
+      <a-table :columns="columns" :data-source="data">
+        <template slot="title">
+          <div class="right-title">
+            列表
+          </div>
+          <div style="float: right">
+            <a @click="showModal">变更</a>
+          </div>
+        </template>
       </a-table>
     </div>
+    <div>
+      <a-modal
+          title="Title"
+          :visible="visible"
+          :confirm-loading="confirmLoading"
+          :centered = "centered"
+          @ok="handleOk"
+          @cancel="handleCancel"
+      >
+        <a-form-model layout='vertical' :form="form">
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+          <a-form-model-item label="用户名">
+            <a-input/>
+          </a-form-model-item>
+        </a-form-model>
+      </a-modal>
+    </div>
+    <div>
+      <a>修改密码</a>
+    </div>
   </div>
+
 </template>
 <script>
-
-const scale = [{
-  dataKey: 'name',
-  min: 0,
-},{
-  dataKey: 'age',
-  min: 0,
-  max: 100,
-}];
-
-
 const columns = [
   {
     title: 'Name',
     dataIndex: 'name',
-    width: 150,
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
-    width: 150,
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    width: 150,
+    title: 'Cash Assets',
+    dataIndex: 'money',
   },
 ];
 
-import { getTableData, getCharData } from '@/api/table';
+const data = [
+  {
+    key: '1',
+    name: 'Jim Green',
+    money: 'John Brown',
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    money: '￥1,256,000.00',
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    money: '￥120,000.00',
+  },
+];
 
 export default {
+  beforeCreate() {
+    //创建表单
+    this.form = this.$form.createForm(this, { name: 'form_in_modal' });
+  },
   data() {
     return {
-      scale,
-      currentPage:1,
-      height: 400,
-      tableData:[],
-      charData:[],
+      centered:true,
+      data,
       columns,
-      loading:true,
-      pagination:{
-        pageSize:20,
-        itemRender: (current, type, originalElement) => {
-          if (type === 'prev') {
-            return <a>前</a>;
-          } else if (type === 'next') {
-            return <a>后</a>;
-          }
-          return originalElement;
-        }
-      }
+      visible: false,
+      confirmLoading: false,
     };
   },
-  mounted() {
-    this.getTable(),
-    this.getChar()
-  },
   methods:{
-    handleCurrentChange(currentPage){
-      this.currentPage = currentPage.curren;
-      this.getChar();
+    showModal() {
+      this.visible = true;
     },
-    getTable(){
-      getTableData().then(res => {
-        this.loading = false;
-        this.tableData = res;
-      })
+    handleOk() {
+      const form = this.form;
+      window.console.log('form 表单内容: ', form.value);
+      form.resetFields();
+      this.visible = false;
     },
-    getChar(){
-      let para = {
-        limit: this.pagination.pageSize,
-        page: this.currentPage,
-      }
-      getCharData(para).then(res =>{
-        this.loading = false;
-        this.charData = res;
-      })
-    }
+    handleCancel() {
+      console.log('Clicked cancel button');
+      this.visible = false;
+    },
   }
 };
 </script>
 <style>
-.even {
-  background: white;
+.page{
+  width: 800px;
+  margin: 0 auto;
 }
-.odd{
-  background: gray;
+.right-title{
+  float: left;
+  margin-left: 20px;
+  font-size: 20px;
 }
 </style>
