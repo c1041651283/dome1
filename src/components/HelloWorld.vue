@@ -3,22 +3,23 @@
     <div>
       <a-table
           :columns="columns"
-          :data-source="data"
+          :data-source="tableData"
           :showHeader="showHeader"
           :pagination="pagination"
-          bordered
+          :loading="loading"
       >
         <template slot="title">
-          <div class="right-title">ユーザー情報</div>
-          <div class="left-title">
+          <div class="left-title">ユーザー情報</div>
+          <div class="right-title">
             <span v-if="flag">
               <a @click="() => edit()">变更</a>
             </span>
             <span v-else>
               <a @click="() => save()">保存</a>
-              <a @confirm="() => cancel()">取消</a>
+              <a @click="() => cancel()">取消</a>
             </span>
           </div>
+          <div class="clear"></div>
         </template>
         <template v-for="col in ['content']" :slot="col" slot-scope="text, record">
           <div :key="col">
@@ -35,91 +36,103 @@
         </template>
       </a-table>
     </div>
-    <div>
+    <div style="padding-left: 500px">
       <a>パスワードを変更></a>
     </div>
   </div>
 </template>
 <script>
+
+import { getProfileData,setProfileData } from '../api/table'
+
 const columns = [
   {
     title: "info",
     dataIndex: "info",
     width: "150px",
+    align: 'center',
     scopedSlots: { customRender: "info" },
   },
   {
     title: "content",
     dataIndex: "content",
     width: "150px",
+    align: 'center',
     scopedSlots: { customRender: "content" },
   },
 ];
-const data = [];
-for (let i = 0; i < 5; i++) {
-  data.push({
-    key: i.toString(),
-    info: `Edrward ${i}`,
-    content: 32,
-  });
-}
 export default {
   data() {
-    this.cacheData = data.map((item) => ({ ...item }));
     return {
+      loading:true,
       showHeader: false,
       flag: true,
-      data,
       columns,
       pagination: false,
+      tableData: [],
+      cacheData: [],
     };
+  },
+  created() {
+
+  },
+  mounted() {
+    this.getData()
   },
   methods: {
     handleChange(value, key, column) {
-      const newData = [...this.data];
+      const newData = [...this.tableData];
       const target = newData.filter((item) => key === item.key)[0];
       if (target) {
         target[column] = value;
-        this.data = newData;
+        this.tableData = newData;
       }
     },
     edit() {
-      const newData = [...this.data];
-      this.data = newData;
+      const newData = [...this.tableData];
+      this.tableData = newData;
       this.flag = false;
     },
     save() {
-      const newData = [...this.data];
-      const newCacheData = [...this.cacheData];
-      this.data = newData;
+      const newData = [...this.tableData];
+      this.loading=true;
+      this.tableData = newData;
+      this.cacheData = newData.map(item => ({...item}));
       this.flag = true;
-      this.cacheData = newCacheData;
+      this.submitForm(this.tableData);
     },
-    cancel(key) {
-      const newData = [...this.data];
-      const target = newData.filter((item) => key === item.key)[0];
-      if (target) {
-        Object.assign(
-            target,
-            this.cacheData.filter((item) => key === item.key)[0]
-        );
-        delete target.editable;
-        this.data = newData;
-      }
+    cancel() {
+      // const newData = [...this.tableData];
+      this.tableData = this.cacheData;
       this.flag = true;
+    },
+    getData(){
+      getProfileData().then((res) => {
+        this.tableData = res;
+        this.loading = false;
+      });
+    },
+    submitForm(userForm){
+      setProfileData(userForm).then((res) => {
+        this.tableData = res;
+        this.loading=false;
+      });
     },
   },
 };
 </script>
 <style>
 .page {
-  width: 800px;
+  width: 80%;
   margin: 0 auto;
 }
-/*.right-title {*/
-/*  float: right;*/
-/*}*/
-/*.left-title {*/
-/*  float: left;*/
-/*}*/
+.right-title {
+  float: right;
+}
+.left-title {
+  float: left;
+}
+.clear{
+  clear:both;
+}
 </style>
